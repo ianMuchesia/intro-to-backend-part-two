@@ -1,0 +1,13 @@
+
+
+const getAllProducts = async (req, res)=>{
+    res.status(200).json({msg:"product route"})
+}
+const getAllProductsStatic = async (req, res)=>{
+    throw new Error('testing async error')
+    res.status(200).json({msg:"product route"})
+}
+
+module.exports = {
+    getAllProducts,getAllProductsStatic,
+}
