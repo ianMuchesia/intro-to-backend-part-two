@@ -6,7 +6,7 @@ const Product = require('../models/products')
 const getAllProductsStatic = async (req, res)=>{
 
 
-    const products = await Product.find({}).sort('-name price')//if pname matches it is going to sort price first
+    const products = await Product.find({}).select('name price')//if pname matches it is going to sort price first
     //throw new Error('testing async error')
     res.status(200).json({products, nbHits:products.length})
 }
