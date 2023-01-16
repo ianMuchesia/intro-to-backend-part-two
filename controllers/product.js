@@ -51,6 +51,15 @@ const getAllProducts = async (req, res)=>{
         const fieldLists = fields.split(',').join(" ")
         result = result.select(fieldLists)
     }
+    // if user doesn't pass value its going to be one
+    const page = Number(req.query.page)|| 1
+    const limit = Number(req.query.limit) || 7
+    //if its page 3 then 3-1=2 * 7 which means it will skip 14 items
+    const skip = (page-1)*limit;
+
+    result = result.skip(skip).limit(limit)
+
+    //remember in our case we have 23 products so this means we have 4 pages and each page lets say we have 7 items per page. the last page will have two items
 
     // Wait for the result to be resolved
     const products = await result
