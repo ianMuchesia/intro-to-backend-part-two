@@ -6,13 +6,13 @@ const Product = require('../models/products')
 const getAllProductsStatic = async (req, res)=>{
 
 
-    const products = await Product.find({}).sort('-name price')//if pname matches it is going to sort price first
+    const products = await Product.find({}).select('name price').limit(4)//if pname matches it is going to sort price first
     //throw new Error('testing async error')
     res.status(200).json({products, nbHits:products.length})
 }
 const getAllProducts = async (req, res)=>{
     // Destructuring the query object to extract the values of featured, company, name and sort
-    const { featured, company, name ,sort } = req.query
+    const { featured, company, name ,sort , fields} = req.query
 
     // Initializing an empty queryObject
     const queryObject = {}
@@ -43,7 +43,23 @@ const getAllProducts = async (req, res)=>{
         // Sort the result object using the sortList
         //sort method being used is the mongoose on not javascript one
         result = result.sort(sortList)
+    }else{
+        result = result.sort(sortList)
     }
+
+    if(fields){
+        const fieldLists = fields.split(',').join(" ")
+        result = result.select(fieldLists)
+    }
+    // if user doesn't pass value its going to be one
+    const page = Number(req.query.page)|| 1
+    const limit = Number(req.query.limit) || 7
+    //if its page 3 then 3-1=2 * 7 which means it will skip 14 items
+    const skip = (page-1)*limit;
+
+    result = result.skip(skip).limit(limit)
+
+    //remember in our case we have 23 products so this means we have 4 pages and each page lets say we have 7 items per page. the last page will have two items
 
     // Wait for the result to be resolved
     const products = await result
