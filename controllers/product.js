@@ -6,13 +6,13 @@ const Product = require('../models/products')
 const getAllProductsStatic = async (req, res)=>{
 
 
-    const products = await Product.find({}).select('name price').limit(4)//if pname matches it is going to sort price first
+    const products = await Product.find({price:{$gt:30}}).sort('price').select('name price').limit(20)//if pname matches it is going to sort price first
     //throw new Error('testing async error')
     res.status(200).json({products, nbHits:products.length})
 }
 const getAllProducts = async (req, res)=>{
     // Destructuring the query object to extract the values of featured, company, name and sort
-    const { featured, company, name ,sort , fields} = req.query
+    const { featured, company, name ,sort , fields, numericFilter} = req.query
 
     // Initializing an empty queryObject
     const queryObject = {}
@@ -32,7 +32,27 @@ const getAllProducts = async (req, res)=>{
         // If present, set the name value in the queryObject with a regex option
         queryObject.name = {$regex: name, $options:'i'}
     }
+    if(numericFilter){
+        const operatorMap ={
+            '>':'$gt',
+            '>=':'$gte',
+            '=':'$eq',
+            '<':'$lt',
+            '<=':'$gte',
+        }
+        //regular expression magic
+        const regEx = /\b(<|>|>=|=|<|<=)\b/g
+        let filters = numericFilter.replace(regEx, (match)=>`-${operatorMap[match]}-`)
 
+        const options = ['price', 'rating'];
+        filters = filters.split(',').forEach((item)=>{
+            const [field, operator, value] = item.split('-')
+            if(options.includes(field)){
+                queryObject[field] = {[operator]:Number(value)}
+            }
+        })
+        console.log(filters)
+    }
     // Initialize the result object with the find method and the queryObject
     let result = Product.find(queryObject)
 
@@ -44,7 +64,7 @@ const getAllProducts = async (req, res)=>{
         //sort method being used is the mongoose on not javascript one
         result = result.sort(sortList)
     }else{
-        result = result.sort(sortList)
+        result = result.sort('createAt')
     }
 
     if(fields){
