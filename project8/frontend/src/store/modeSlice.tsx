@@ -5,7 +5,7 @@ type GlobalState ={
     mode: PaletteMode
 }
 
-const initialState:GlobalState= {
+const initialState:any= {
     mode: "dark"
 }
 
@@ -21,5 +21,5 @@ export const globalSlice = createSlice({
 })
 
 
-
+export const { setMode } = globalSlice.actions
 export default globalSlice
